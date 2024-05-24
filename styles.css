@@ -3,6 +3,17 @@ body {
     background-color: #f4f4f9;
     margin: 0;
 }
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
 
 .container {
     display: flex;
