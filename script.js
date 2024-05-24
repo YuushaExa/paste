@@ -80,13 +80,13 @@ function createNoteElement(content) {
 }
 
 function addNote() {
-    const column = this.parentElement;
-    if (column.getAttribute('data-column') === 'todo') {
+    const todoColumn = document.querySelector('.column[data-column="todo"]');
+    if (todoColumn) {
         const newNote = createNoteElement('New Note');
-        column.insertBefore(newNote, this);
+        todoColumn.insertBefore(newNote, todoColumn.querySelector('.add-note'));
         saveNotes();
     } else {
-        alert('Notes can only be added to the "todo" column.');
+        alert('The "todo" column does not exist.');
     }
 }
 
