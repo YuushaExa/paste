@@ -99,17 +99,9 @@ function drop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
     const column = event.target.closest('.column');
-    const addNoteButton = column.querySelector('.add-note');
-
     if (draggingElement && column) {
         draggingElement.classList.remove('dragging');
-        // Check if the drop target is not the add-note button or its children
-        if (event.target !== addNoteButton && !addNoteButton.contains(event.target)) {
-            column.insertBefore(draggingElement, event.target.closest('.note'));
-        } else {
-            // If dropped on or after the add-note button, place the note before the add-note button
-            column.insertBefore(draggingElement, addNoteButton);
-        }
+        column.insertBefore(draggingElement, event.target.closest('.note'));
         saveNotes();
     }
 }
