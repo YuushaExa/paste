@@ -42,26 +42,32 @@ function createNoteElement(content) {
     note.setAttribute('draggable', 'true');
     note.addEventListener('dragstart', drag);
 
+    const moveIconWrapper = document.createElement('div'); // Wrapper for the move icon
+    moveIconWrapper.classList.add('move-icon-wrapper');
+
+    const icon = document.createElement('img');
+    icon.setAttribute('src', 'arrows-move.svg');
+    icon.setAttribute('alt', 'Move');
+    icon.classList.add('icon');
+
+    moveIconWrapper.appendChild(icon); // Append the icon to the wrapper
+
     const noteText = document.createElement('span');
     noteText.textContent = content;
     noteText.setAttribute('contenteditable', 'true');
     noteText.addEventListener('input', saveNotes); // Save on input change
-
-    const icon = document.createElement('img');
-    icon.setAttribute('src', 'arrows-move.svg'); // Assuming your SVG file is named "arrows-move.svg"
-    icon.setAttribute('alt', 'Move');
-    icon.classList.add('icon');
 
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-note');
     deleteButton.textContent = 'Delete';
     deleteButton.addEventListener('click', deleteNote);
 
-    note.appendChild(icon);
+    note.appendChild(moveIconWrapper); // Append the move icon wrapper to the note
     note.appendChild(noteText);
     note.appendChild(deleteButton);
     return note;
 }
+
 
 
 function addNote() {
