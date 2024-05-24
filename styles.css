@@ -40,6 +40,13 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+
+.note span:focus-visible {
+    border-bottom: 1px solid #0079bf;
+    outline: none;
+    padding-bottom: 5px;
+}
+
 .note span:focus-visible::after {
     content: '';
     position: absolute;
