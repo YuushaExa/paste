@@ -94,9 +94,15 @@ function drop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
     const column = event.target.closest('.column');
+    const addNoteButton = column.querySelector('.add-note');
+    
     if (draggingElement && column) {
         draggingElement.classList.remove('dragging');
-        column.insertBefore(draggingElement, event.target.closest('.note'));
+        if (event.target !== addNoteButton) {
+            column.insertBefore(draggingElement, event.target.closest('.note'));
+        } else {
+            column.insertBefore(draggingElement, addNoteButton);
+        }
         saveNotes();
     }
 }
