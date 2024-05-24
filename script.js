@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addNoteButtons.forEach(button => {
         button.addEventListener('click', addNote);
+        button.setAttribute('draggable', 'false');
     });
-
     columns.forEach(column => {
         column.addEventListener('dragover', allowDrop);
         column.addEventListener('drop', drop);
