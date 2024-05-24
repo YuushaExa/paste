@@ -40,10 +40,17 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-.note span:focus-visible {
-   border: 1px solid #e74c3c;
-       outline:none;
+.note span:focus-visible::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #0079bf;
+    margin-bottom: 5px;
 }
+
 .add-note {
     background-color: #0079bf;
     color: white;
