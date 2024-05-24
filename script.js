@@ -95,14 +95,16 @@ function addNote() {
         alert('The "To Do" column does not exist.');
     }
 }
-
-function allowDrop(event) {
-    event.preventDefault();
-}
-
 function drag(event) {
     event.dataTransfer.setData('text/plain', event.target.innerHTML);
     event.target.classList.add('dragging');
+}
+function allowDrop(event) {
+    event.preventDefault();
+    const draggingElement = document.querySelector('.dragging');
+    if (draggingElement && event.target.closest('.note') && event.target.closest('.note') !== draggingElement) {
+        event.target.closest('.note').classList.add('bounce');
+    }
 }
 
 function drop(event) {
@@ -110,8 +112,10 @@ function drop(event) {
     const draggingElement = document.querySelector('.dragging');
     const column = event.target.closest('.column');
     if (draggingElement && column) {
+        const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
-        column.insertBefore(draggingElement, event.target.closest('.note'));
+        column.insertBefore(draggingElement, targetNote);
+        column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
         saveNotes();
     }
 }
