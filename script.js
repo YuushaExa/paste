@@ -44,6 +44,7 @@ function createNoteElement(content) {
 
     const moveIconWrapper = document.createElement('div'); // Wrapper for the move icon
     moveIconWrapper.classList.add('move-icon-wrapper');
+    moveIconWrapper.setAttribute('draggable', 'false'); // Set draggable attribute to false
 
     const icon = document.createElement('img');
     icon.setAttribute('src', 'arrows-move.svg');
@@ -67,8 +68,6 @@ function createNoteElement(content) {
     note.appendChild(deleteButton);
     return note;
 }
-
-
 
 function addNote() {
     const column = this.parentElement;
