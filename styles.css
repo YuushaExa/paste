@@ -42,7 +42,7 @@ body {
 }
 
 .note span:focus-visible {
-    border-bottom: 1px solid #0079bf;
+    border-bottom: 1px dashed #0079bf;
     outline: none;
     padding-bottom: 3px;
 }
