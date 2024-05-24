@@ -18,6 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
         column.addEventListener('dragover', allowDrop);
         column.addEventListener('drop', drop);
     });
+
+    document.body.addEventListener('click', (event) => {
+        if (!event.target.classList.contains('note-text')) {
+            document.querySelectorAll('.note-text').forEach(noteText => {
+                noteText.contentEditable = 'false';
+            });
+            saveNotes();
+        }
+    });
 });
 
 function loadNotes() {
@@ -36,7 +45,7 @@ function saveNotes() {
     const columns = document.querySelectorAll('.column');
     columns.forEach(column => {
         const columnName = column.getAttribute('data-column');
-        const notes = Array.from(column.querySelectorAll('.note')).map(note => note.textContent.replace('Delete', '').trim());
+        const notes = Array.from(column.querySelectorAll('.note')).map(note => note.querySelector('.note-text').textContent.trim());
         localStorage.setItem(columnName, JSON.stringify(notes));
     });
 }
@@ -58,9 +67,14 @@ function createNoteElement(content) {
     moveIconWrapper.appendChild(icon); // Append the icon to the wrapper
 
     const noteText = document.createElement('span');
+    noteText.classList.add('note-text');
     noteText.textContent = content;
-    noteText.setAttribute('contenteditable', 'true');
-    noteText.addEventListener('input', saveNotes); // Save on input change
+    noteText.addEventListener('click', (event) => {
+        event.stopPropagation();
+        noteText.contentEditable = 'true';
+        noteText.focus();
+    });
+    noteText.addEventListener('blur', saveNotes); // Save on blur event
 
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-note');
