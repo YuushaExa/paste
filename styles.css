@@ -40,8 +40,9 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-.note span::selection {
-    background-color: transparent;
+.note span::focus-visible {
+   border: 1px solid #e74c3c;
+       outline:none;
 }
 .add-note {
     background-color: #0079bf;
