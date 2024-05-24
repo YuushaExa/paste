@@ -45,7 +45,10 @@ function createNoteElement(content) {
     const moveIconWrapper = document.createElement('div'); // Wrapper for the move icon
     moveIconWrapper.classList.add('move-icon-wrapper');
     moveIconWrapper.setAttribute('draggable', 'false'); // Set draggable attribute to false
-
+    icon.setAttribute('draggable', 'false');
+    noteText.setAttribute('draggable', 'false');
+    deleteButton.setAttribute('draggable', 'false');
+    
     const icon = document.createElement('img');
     icon.setAttribute('src', 'arrows-move.svg');
     icon.setAttribute('alt', 'Move');
