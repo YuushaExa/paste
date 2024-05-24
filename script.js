@@ -81,9 +81,13 @@ function createNoteElement(content) {
 
 function addNote() {
     const column = this.parentElement;
-    const newNote = createNoteElement('New Note');
-    column.insertBefore(newNote, this);
-    saveNotes();
+    if (column.getAttribute('data-column') === 'todo') {
+        const newNote = createNoteElement('New Note');
+        column.insertBefore(newNote, this);
+        saveNotes();
+    } else {
+        alert('Notes can only be added to the "todo" column.');
+    }
 }
 
 function allowDrop(event) {
