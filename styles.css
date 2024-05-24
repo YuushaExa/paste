@@ -49,6 +49,7 @@ body {
 
 .note span {
     padding-bottom: 3px;
+    overflow-wrap: anywhere;
 }
 
 .add-note {
