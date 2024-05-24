@@ -8,8 +8,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: auto;
+    margin-top: 200px;
 }
 
 .board {
@@ -60,9 +59,12 @@ body {
     color: white;
     border: none;
     border-radius: 5px;
-    padding: 10px;
+    padding: 15px;
     cursor: pointer;
-    margin-top: auto;
+    position: fixed;
+    right: 5%;
+    bottom: 5%;
+    font-size: 15px;
 }
 
 .add-note:hover {
