@@ -104,8 +104,12 @@ function allowDrop(event) {
     const draggingElement = document.querySelector('.dragging');
     if (draggingElement && event.target.closest('.note') && event.target.closest('.note') !== draggingElement) {
         event.target.closest('.note').classList.add('bounce');
+        setTimeout(() => {
+            event.target.closest('.note').classList.remove('bounce');
+        }, 500); // Remove bounce effect after 0.5 seconds
     }
 }
+
 
 function drop(event) {
     event.preventDefault();
