@@ -15,7 +15,7 @@ body {
     }
 }
 .note.bounce {
-    animation: bounce 0.5s infinite alternate;
+animation: bounce 0.5s ease-in-out forwards;
 }
 .container {
     display: flex;
