@@ -1,3 +1,4 @@
+User
 document.addEventListener('DOMContentLoaded', () => {
     const addNoteButtons = document.querySelectorAll('.add-note');
     const columns = document.querySelectorAll('.column');
@@ -12,13 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     columns.forEach(column => {
         column.addEventListener('dragover', allowDrop);
         column.addEventListener('drop', drop);
-    });
-
-    document.addEventListener('dragend', (event) => {
-        const draggingElement = document.querySelector('.dragging');
-        if (draggingElement) {
-            draggingElement.style.animation = ''; // Remove animation
-        }
     });
 });
 
@@ -51,7 +45,7 @@ function createNoteElement(content) {
 
     const moveIconWrapper = document.createElement('div'); // Wrapper for the move icon
     moveIconWrapper.classList.add('move-icon-wrapper');
-
+    
     const icon = document.createElement('img');
     icon.setAttribute('src', 'arrows-move.svg');
     icon.setAttribute('alt', 'Move');
@@ -77,7 +71,7 @@ function createNoteElement(content) {
     icon.setAttribute('draggable', 'false');
     noteText.setAttribute('draggable', 'false');
     deleteButton.setAttribute('draggable', 'false');
-
+    
     return note;
 }
 
@@ -95,15 +89,15 @@ function allowDrop(event) {
 function drag(event) {
     event.dataTransfer.setData('text/plain', event.target.innerHTML);
     event.target.classList.add('dragging');
-    event.target.style.animation = 'bounce 0.3s infinite alternate'; // Add bounce animation
 }
 
 function drop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
-    if (draggingElement) {
+    const column = event.target.closest('.column');
+    if (draggingElement && column) {
         draggingElement.classList.remove('dragging');
-        event.target.closest('.column').insertBefore(draggingElement, event.target.closest('.column').querySelector('.add-note'));
+        column.insertBefore(draggingElement, event.target.closest('.note'));
         saveNotes();
     }
 }
