@@ -50,6 +50,7 @@ body {
 .note span {
     padding-bottom: 3px;
     overflow-wrap: anywhere;
+    cursor: text;
 }
 
 .add-note {
