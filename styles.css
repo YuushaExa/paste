@@ -14,7 +14,9 @@ body {
         transform: translateY(-5px);
     }
 }
-
+.note.bounce {
+    animation: bounce 0.5s infinite alternate;
+}
 .container {
     display: flex;
     justify-content: center;
