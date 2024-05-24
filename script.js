@@ -2,48 +2,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNoteButtons = document.querySelectorAll('.add-note');
     const columns = document.querySelectorAll('.column');
 
-    // Set the add-note buttons to be undraggable
-    addNoteButtons.forEach(button => {
-        button.setAttribute('draggable', 'false');
-    });
+    // Disable dragging for add-note buttons
+    addNoteButtons.forEach(button => button.setAttribute('draggable', 'false'));
 
-    // Load notes from local storage
+    // Load existing notes from local storage
     loadNotes();
 
-    addNoteButtons.forEach(button => {
-        button.addEventListener('click', addNote);
-    });
-
+    // Set up event listeners
+    addNoteButtons.forEach(button => button.addEventListener('click', addNote));
     columns.forEach(column => {
         column.addEventListener('dragover', allowDrop);
         column.addEventListener('drop', drop);
     });
 
-    document.body.addEventListener('click', (event) => {
-        if (!event.target.classList.contains('note-text')) {
-            document.querySelectorAll('.note-text').forEach(noteText => {
-                noteText.contentEditable = 'false';
-            });
-            saveNotes();
-        }
-    });
+    // Close all editable notes when clicking outside
+    document.body.addEventListener('click', closeEditableNotes);
 });
 
 function loadNotes() {
-    const columns = document.querySelectorAll('.column');
-    columns.forEach(column => {
+    document.querySelectorAll('.column').forEach(column => {
         const columnName = column.getAttribute('data-column');
         const notes = JSON.parse(localStorage.getItem(columnName) || '[]');
         notes.forEach(noteContent => {
-            const note = createNoteElement(noteContent);
-            column.insertBefore(note, column.querySelector('.add-note'));
+            column.insertBefore(createNoteElement(noteContent), column.querySelector('.add-note'));
         });
     });
 }
 
 function saveNotes() {
-    const columns = document.querySelectorAll('.column');
-    columns.forEach(column => {
+    document.querySelectorAll('.column').forEach(column => {
         const columnName = column.getAttribute('data-column');
         const notes = Array.from(column.querySelectorAll('.note')).map(note => note.querySelector('.note-text').textContent.trim());
         localStorage.setItem(columnName, JSON.stringify(notes));
@@ -56,41 +43,46 @@ function createNoteElement(content) {
     note.setAttribute('draggable', 'true');
     note.addEventListener('dragstart', drag);
 
-    const moveIconWrapper = document.createElement('div'); // Wrapper for the move icon
+    const moveIconWrapper = document.createElement('div');
     moveIconWrapper.classList.add('move-icon-wrapper');
-    
-    const icon = document.createElement('img');
-    icon.setAttribute('src', 'arrows-move.svg');
-    icon.setAttribute('alt', 'Move');
-    icon.classList.add('icon');
 
-    moveIconWrapper.appendChild(icon); // Append the icon to the wrapper
+    const icon = document.createElement('img');
+    icon.src = 'arrows-move.svg';
+    icon.alt = 'Move';
+    icon.classList.add('icon');
 
     const noteText = document.createElement('span');
     noteText.classList.add('note-text');
     noteText.textContent = content;
     noteText.addEventListener('click', (event) => {
         event.stopPropagation();
-        noteText.contentEditable = 'true';
-        noteText.focus();
+        makeEditable(noteText);
     });
-    noteText.addEventListener('blur', saveNotes); // Save on blur event
 
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-note');
     deleteButton.textContent = 'Delete';
     deleteButton.addEventListener('click', deleteNote);
 
-    note.appendChild(moveIconWrapper); // Append the move icon wrapper to the note
-    note.appendChild(noteText);
-    note.appendChild(deleteButton);
+    moveIconWrapper.appendChild(icon);
+    note.append(moveIconWrapper, noteText, deleteButton);
 
-    moveIconWrapper.setAttribute('draggable', 'false'); // Set draggable attribute to false
-    icon.setAttribute('draggable', 'false');
-    noteText.setAttribute('draggable', 'false');
-    deleteButton.setAttribute('draggable', 'false');
-    
+    setDraggable([moveIconWrapper, icon, noteText, deleteButton], false);
+
     return note;
+}
+
+function setDraggable(elements, draggable) {
+    elements.forEach(element => element.setAttribute('draggable', draggable));
+}
+
+function makeEditable(element) {
+    element.contentEditable = 'true';
+    element.focus();
+    element.addEventListener('blur', () => {
+        element.contentEditable = 'false';
+        saveNotes();
+    }, { once: true });
 }
 
 function addNote() {
@@ -100,7 +92,7 @@ function addNote() {
         todoColumn.insertBefore(newNote, todoColumn.querySelector('.add-note'));
         saveNotes();
     } else {
-        alert('The "todo" column does not exist.');
+        alert('The "To Do" column does not exist.');
     }
 }
 
@@ -125,7 +117,17 @@ function drop(event) {
 }
 
 function deleteNote() {
-    const note = this.parentElement;
-    note.parentElement.removeChild(note);
+    this.closest('.note').remove();
     saveNotes();
+}
+
+function closeEditableNotes(event) {
+    if (!event.target.classList.contains('note-text')) {
+        document.querySelectorAll('.note-text').forEach(noteText => {
+            if (noteText.contentEditable === 'true') {
+                noteText.contentEditable = 'false';
+            }
+        });
+        saveNotes();
+    }
 }
