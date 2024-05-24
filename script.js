@@ -93,13 +93,19 @@ function drag(event) {
 function drop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
+    const dropTarget = event.target.closest('.note');
     const addNoteButton = event.target.closest('.add-note');
-    if (draggingElement && addNoteButton) {
+    if (draggingElement && (dropTarget || addNoteButton)) {
         draggingElement.classList.remove('dragging');
-        event.target.closest('.column').insertBefore(draggingElement, addNoteButton);
+        if (dropTarget) {
+            event.target.closest('.column').insertBefore(draggingElement, dropTarget);
+        } else if (addNoteButton) {
+            event.target.closest('.column').insertBefore(draggingElement, addNoteButton);
+        }
         saveNotes();
     }
 }
+
 
 function deleteNote() {
     const note = this.parentElement;
