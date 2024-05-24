@@ -47,15 +47,22 @@ function createNoteElement(content) {
     noteText.setAttribute('contenteditable', 'true');
     noteText.addEventListener('input', saveNotes); // Save on input change
 
+    const icon = document.createElement('img');
+    icon.setAttribute('src', 'todo/arrows-move.svg'); // Assuming your SVG file is named "arrows-move.svg"
+    icon.setAttribute('alt', 'Move');
+    icon.classList.add('icon');
+
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-note');
     deleteButton.textContent = 'Delete';
     deleteButton.addEventListener('click', deleteNote);
 
+    note.appendChild(icon);
     note.appendChild(noteText);
     note.appendChild(deleteButton);
     return note;
 }
+
 
 function addNote() {
     const column = this.parentElement;
