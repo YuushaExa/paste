@@ -40,7 +40,10 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-
+.note::selection {
+    border: none;
+    border-bottom: 2px solid #0079bf;
+}
 .add-note {
     background-color: #0079bf;
     color: white;
