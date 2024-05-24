@@ -95,12 +95,10 @@ function addNote() {
         alert('The "To Do" column does not exist.');
     }
 }
-
 function drag(event) {
     event.dataTransfer.setData('text/plain', event.target.innerHTML);
     event.target.classList.add('dragging');
 }
-
 function allowDrop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
