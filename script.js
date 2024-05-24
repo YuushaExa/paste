@@ -1,4 +1,3 @@
-User
 document.addEventListener('DOMContentLoaded', () => {
     const addNoteButtons = document.querySelectorAll('.add-note');
     const columns = document.querySelectorAll('.column');
