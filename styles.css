@@ -8,7 +8,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 200px;
+    margin: 200px 0 200px 0;
 }
 
 .board {
@@ -62,7 +62,7 @@ body {
     padding: 15px;
     cursor: pointer;
     position: fixed;
-    right: 5%;
+    left: 5%;
     bottom: 5%;
     font-size: 15px;
 }
