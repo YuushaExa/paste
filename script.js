@@ -2,13 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNoteButtons = document.querySelectorAll('.add-note');
     const columns = document.querySelectorAll('.column');
 
+    // Set the add-note buttons to be undraggable
+    addNoteButtons.forEach(button => {
+        button.setAttribute('draggable', 'false');
+    });
+
     // Load notes from local storage
     loadNotes();
 
     addNoteButtons.forEach(button => {
         button.addEventListener('click', addNote);
-        button.setAttribute('draggable', 'false');
     });
+
     columns.forEach(column => {
         column.addEventListener('dragover', allowDrop);
         column.addEventListener('drop', drop);
@@ -95,12 +100,14 @@ function drop(event) {
     const draggingElement = document.querySelector('.dragging');
     const column = event.target.closest('.column');
     const addNoteButton = column.querySelector('.add-note');
-    
+
     if (draggingElement && column) {
         draggingElement.classList.remove('dragging');
-        if (event.target !== addNoteButton) {
+        // Check if the drop target is not the add-note button or its children
+        if (event.target !== addNoteButton && !addNoteButton.contains(event.target)) {
             column.insertBefore(draggingElement, event.target.closest('.note'));
         } else {
+            // If dropped on or after the add-note button, place the note before the add-note button
             column.insertBefore(draggingElement, addNoteButton);
         }
         saveNotes();
