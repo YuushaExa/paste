@@ -125,9 +125,9 @@ function drop(event) {
         const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
         const dropPosition = getDropPosition(event.clientY, column);
-        if (dropPosition === 'before') {
+        if (dropPosition === 'before' && targetNote) {
             column.insertBefore(draggingElement, targetNote);
-        } else if (dropPosition === 'after') {
+        } else if (dropPosition === 'after' && targetNote && targetNote.nextElementSibling) {
             column.insertBefore(draggingElement, targetNote.nextElementSibling);
         } else {
             column.appendChild(draggingElement); // Append the dragging element at the end of the column
