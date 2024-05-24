@@ -102,14 +102,20 @@ function drag(event) {
 function allowDrop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
-    if (draggingElement && event.target.closest('.note') && event.target.closest('.note') !== draggingElement) {
-        event.target.closest('.note').classList.add('bounce');
-        setTimeout(() => {
-            event.target.closest('.note').classList.remove('bounce');
-        }, 500); // Remove bounce effect after 0.5 seconds
+    const targetNote = event.target.closest('.note');
+    if (draggingElement && targetNote && targetNote !== draggingElement) {
+        const column = event.target.closest('.column');
+        const notes = Array.from(column.querySelectorAll('.note'));
+        const draggingIndex = notes.indexOf(draggingElement);
+        const targetIndex = notes.indexOf(targetNote);
+        if (draggingIndex !== -1 && targetIndex !== -1 && draggingIndex !== targetIndex) {
+            targetNote.classList.add('bounce');
+            setTimeout(() => {
+                targetNote.classList.remove('bounce');
+            }, 500); // Remove bounce effect after 0.5 seconds
+        }
     }
 }
-
 
 function drop(event) {
     event.preventDefault();
