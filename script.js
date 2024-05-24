@@ -44,6 +44,8 @@ function createNoteElement(content) {
 
     const noteText = document.createElement('span');
     noteText.textContent = content;
+    noteText.setAttribute('contenteditable', 'true');
+    noteText.addEventListener('input', saveNotes); // Save on input change
 
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-note');
