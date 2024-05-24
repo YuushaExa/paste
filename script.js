@@ -48,7 +48,7 @@ function createNoteElement(content) {
     noteText.addEventListener('input', saveNotes); // Save on input change
 
     const icon = document.createElement('img');
-    icon.setAttribute('src', 'todo/arrows-move.svg'); // Assuming your SVG file is named "arrows-move.svg"
+    icon.setAttribute('src', 'arrows-move.svg'); // Assuming your SVG file is named "arrows-move.svg"
     icon.setAttribute('alt', 'Move');
     icon.classList.add('icon');
 
