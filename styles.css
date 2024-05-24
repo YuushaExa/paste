@@ -47,11 +47,13 @@ body {
 .note span:focus-visible {
     border-bottom: 1px dashed #0079bf;
     outline: none;
+    padding-bottom: 2px;
 }
 
 .note span {
     overflow-wrap: anywhere;
     cursor: text;
+    padding-bottom: 2px;
 }
 
 .add-note {
