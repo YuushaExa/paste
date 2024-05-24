@@ -124,11 +124,30 @@ function drop(event) {
     if (draggingElement && column) {
         const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
-        column.insertBefore(draggingElement, targetNote);
+        const dropPosition = getDropPosition(event.clientY, column);
+        if (dropPosition === 'before') {
+            column.insertBefore(draggingElement, targetNote);
+        } else if (dropPosition === 'after') {
+            column.insertBefore(draggingElement, targetNote.nextElementSibling);
+        } else {
+            column.appendChild(draggingElement); // Append the dragging element at the end of the column
+        }
         column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
         saveNotes();
     }
 }
+
+function getDropPosition(clientY, column) {
+    const notes = Array.from(column.querySelectorAll('.note'));
+    const lastNote = notes[notes.length - 1];
+    const lastNoteRect = lastNote.getBoundingClientRect();
+    if (clientY > lastNoteRect.bottom) {
+        return 'after'; // Drop after the last note
+    } else {
+        return 'before'; // Drop before the last note
+    }
+}
+
 
 function deleteNote() {
     this.closest('.note').remove();
