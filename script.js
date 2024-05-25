@@ -113,19 +113,23 @@ function allowDrop(event) {
             const draggingRect = draggingElement.getBoundingClientRect();
             const targetRect = targetNote.getBoundingClientRect();
 
-            // Calculate the area of intersection
-            const intersection = {
-                top: Math.max(draggingRect.top, targetRect.top),
-                bottom: Math.min(draggingRect.bottom, targetRect.bottom),
-                left: Math.max(draggingRect.left, targetRect.left),
-                right: Math.min(draggingRect.right, targetRect.right)
-            };
-
+            // Calculate the area of the dragging note
             const draggingArea = (draggingRect.bottom - draggingRect.top) * (draggingRect.right - draggingRect.left);
-            const intersectionArea = Math.max(0, intersection.bottom - intersection.top) * Math.max(0, intersection.right - intersection.left);
+            
+            // Calculate the intersection area
+            const intersectionTop = Math.max(draggingRect.top, targetRect.top);
+            const intersectionBottom = Math.min(draggingRect.bottom, targetRect.bottom);
+            const intersectionLeft = Math.max(draggingRect.left, targetRect.left);
+            const intersectionRight = Math.min(draggingRect.right, targetRect.right);
+            const intersectionWidth = intersectionRight - intersectionLeft;
+            const intersectionHeight = intersectionBottom - intersectionTop;
+            const intersectionArea = Math.max(0, intersectionWidth) * Math.max(0, intersectionHeight);
 
-            // If the intersection area is more than 20% of the dragging note's area, perform the replacement
-            if (intersectionArea / draggingArea > 0.2) {
+            // Calculate the percentage of intersection area compared to the dragging note's area
+            const intersectionPercentage = (intersectionArea / draggingArea) * 100;
+
+            // If the intersection percentage is more than 20%, perform the replacement
+            if (intersectionPercentage > 10) {
                 column.insertBefore(draggingElement, targetNote);
                 column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
                 saveNotes();
