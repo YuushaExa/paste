@@ -101,6 +101,20 @@ function drag(event) {
     event.target.classList.add('dragging');
 }
 
+function dragStart(event) {
+    const note = event.target.closest('.note');
+    if (note) {
+        note.classList.add('dragging');
+    }
+}
+
+function dragEnd(event) {
+    const note = event.target.closest('.note');
+    if (note) {
+        note.classList.remove('dragging');
+    }
+}
+
 function allowDrop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
@@ -160,21 +174,10 @@ function allowDrop(event) {
     }
 }
 
-// You should also ensure that .dragging class is added to the note being dragged in your dragstart handler
-document.addEventListener('dragstart', (event) => {
-    const note = event.target.closest('.note');
-    if (note) {
-        note.classList.add('dragging');
-    }
-});
-
-document.addEventListener('dragend', (event) => {
-    const note = event.target.closest('.note');
-    if (note) {
-        note.classList.remove('dragging');
-    }
-});
-
+// Stub function for saving notes
+function saveNotes() {
+    console.log('Notes have been saved');
+}
 
 function drop(event) {
     event.preventDefault();
