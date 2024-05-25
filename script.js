@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['notes'], 'readonly');
         const noteStore = transaction.objectStore('notes');
         const index = noteStore.index('folder_column');
-        
+
         columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
             const request = index.openCursor(IDBKeyRange.only([folderName, columnName]));
@@ -162,22 +162,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['notes'], 'readwrite');
         const noteStore = transaction.objectStore('notes');
 
-        // Clear existing notes for the current folder
-        const clearRequest = noteStore.index('folder_column').openCursor(IDBKeyRange.bound([currentFolder, ''], [currentFolder, '\uffff']));
-        clearRequest.onsuccess = function(event) {
-            const cursor = event.target.result;
-            if (cursor) {
-                cursor.delete();
-                cursor.continue();
-            }
-        };
-
         // Save new notes
         columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
-            const notes = Array.from(column.querySelectorAll('.note')).map(note => note.textContent.replace('Delete', '').trim());
-            notes.forEach(noteContent => {
-                noteStore.add({ folder: currentFolder, column: columnName, content: noteContent });
+            const notes = Array.from(column.querySelectorAll('.note')).map(note => ({
+                folder: currentFolder,
+                column: columnName,
+                content: note.querySelector('span').textContent,
+                id: note.dataset.noteId ? parseInt(note.dataset.noteId) : undefined
+            }));
+            notes.forEach(note => {
+                if (note.id) {
+                    noteStore.put(note);
+                } else {
+                    delete note.id;  // Let the ID be auto-incremented
+                    noteStore.add(note);
+                }
             });
         });
     }
@@ -268,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveNotes();
         }
     }
+
 
     function deleteNote() {
         const note = this.parentElement;
