@@ -5,37 +5,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentFolderNameDiv = document.getElementById('CurrentFolderName');
     let currentFolder = 'Default';
 
-    // Initialize IndexedDB
-    let db;
-    const request = indexedDB.open('todo', 1);
+    // Initialize Dexie database
+    const db = new Dexie('todo');
+    db.version(1).stores({
+        folders: 'name',
+        notes: '++id, folder, column'
+    });
 
-    request.onupgradeneeded = function(event) {
-        db = event.target.result;
-        if (!db.objectStoreNames.contains('folders')) {
-            db.createObjectStore('folders', { keyPath: 'name' });
-        }
-        if (!db.objectStoreNames.contains('notes')) {
-            const noteStore = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
-            noteStore.createIndex('folder_column', ['folder', 'column'], { unique: false });
-        }
-    };
-
-    request.onsuccess = function(event) {
-        db = event.target.result;
-        loadFolders(() => {
-            folderExists(currentFolder).then(exists => {
-                if (!exists) {
-                    createFolder('Default').then(() => loadNotes(currentFolder));
-                } else {
-                    loadNotes(currentFolder);
-                }
-            });
+    // Load folders and notes
+    loadFolders(() => {
+        db.folders.get(currentFolder).then(folder => {
+            if (!folder) {
+                createFolder('Default').then(() => loadNotes(currentFolder));
+            } else {
+                loadNotes(currentFolder);
+            }
         });
-    };
-
-    request.onerror = function(event) {
-        console.error('Database error:', event.target.errorCode);
-    };
+    });
 
     addFolderButton.addEventListener('click', () => {
         const folderName = prompt('Enter folder name:');
@@ -52,61 +38,24 @@ document.addEventListener('DOMContentLoaded', () => {
         currentFolderNameDiv.textContent = `Current Folder: ${currentFolder}`;
     }
 
-    function folderExists(folderName) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['folders'], 'readonly');
-            const folderStore = transaction.objectStore('folders');
-            const request = folderStore.get(folderName);
-
-            request.onsuccess = function(event) {
-                resolve(event.target.result !== undefined);
-            };
-
-            request.onerror = function(event) {
-                reject(event.target.error);
-            };
-        });
-    }
-
     function createFolder(folderName) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['folders'], 'readwrite');
-            const folderStore = transaction.objectStore('folders');
-            const request = folderStore.add({ name: folderName });
-
-            request.onsuccess = function() {
-                resolve();
-            };
-
-            request.onerror = function(event) {
-                console.error('Folder creation error:', event.target.error);
-                reject(event.target.error);
-            };
-        });
+        return db.folders.add({ name: folderName });
     }
 
     function loadFolders(callback) {
         folderList.innerHTML = '';
-        const transaction = db.transaction(['folders'], 'readonly');
-        const folderStore = transaction.objectStore('folders');
-        folderStore.openCursor().onsuccess = function(event) {
-            const cursor = event.target.result;
-            if (cursor) {
-                const li = document.createElement('li');
-                li.textContent = cursor.value.name;
-                li.dataset.folderName = cursor.value.name;
-                li.style.cursor = 'pointer';
-                li.addEventListener('click', () => {
-                    currentFolder = cursor.value.name;
-                    updateCurrentFolderName();
-                    loadNotes(currentFolder);
-                });
-                folderList.appendChild(li);
-                cursor.continue();
-            } else if (callback) {
-                callback();
-            }
-        };
+        db.folders.each(folder => {
+            const li = document.createElement('li');
+            li.textContent = folder.name;
+            li.dataset.folderName = folder.name;
+            li.style.cursor = 'pointer';
+            li.addEventListener('click', () => {
+                currentFolder = folder.name;
+                updateCurrentFolderName();
+                loadNotes(currentFolder);
+            });
+            folderList.appendChild(li);
+        }).then(callback);
     }
 
     function loadNotes(folderName) {
@@ -139,45 +88,28 @@ document.addEventListener('DOMContentLoaded', () => {
             column.addEventListener('drop', drop);
         });
 
-        const transaction = db.transaction(['notes'], 'readonly');
-        const noteStore = transaction.objectStore('notes');
-        const index = noteStore.index('folder_column');
-
-        columns.forEach(column => {
-            const columnName = column.getAttribute('data-column');
-            const request = index.openCursor(IDBKeyRange.only([folderName, columnName]));
-            request.onsuccess = function(event) {
-                const cursor = event.target.result;
-                if (cursor) {
-                    const note = createNoteElement(cursor.value.content, cursor.value.id);
-                    column.insertBefore(note, column.querySelector('.add-note'));
-                    cursor.continue();
-                }
-            };
+        db.notes.where({ folder: folderName }).each(note => {
+            const column = document.querySelector(`.column[data-column="${note.column}"]`);
+            const noteElement = createNoteElement(note.content, note.id);
+            column.insertBefore(noteElement, column.querySelector('.add-note'));
         });
     }
 
     function saveNotes() {
         const columns = document.querySelectorAll('.column');
-        const transaction = db.transaction(['notes'], 'readwrite');
-        const noteStore = transaction.objectStore('notes');
 
-        // Save new notes
         columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
             const notes = Array.from(column.querySelectorAll('.note')).map(note => ({
+                id: parseInt(note.dataset.noteId, 10),
                 folder: currentFolder,
                 column: columnName,
-                content: note.querySelector('span').textContent,
-                id: note.dataset.noteId ? parseInt(note.dataset.noteId) : undefined
+                content: note.querySelector('span').textContent.trim()
             }));
-            notes.forEach(note => {
-                if (note.id) {
-                    noteStore.put(note);
-                } else {
-                    delete note.id;  // Let the ID be auto-incremented
-                    noteStore.add(note);
-                }
+            
+            db.transaction('rw', db.notes, () => {
+                db.notes.where({ folder: currentFolder, column: columnName }).delete();
+                db.notes.bulkPut(notes);
             });
         });
     }
@@ -207,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addNote() {
         const column = this.parentElement;
-        const newNote = createNoteElement('New Note');
+        const id = Date.now() + Math.random().toString(36).substr(2, 9);
+        const newNote = createNoteElement('New Note', id);
         column.insertBefore(newNote, this);
         saveNotes();
     }
@@ -269,23 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
- function deleteNote() {
-    const note = this.parentElement;
-    const noteId = parseInt(note.dataset.noteId); // Get the ID of the note
-
-    // Remove the note from IndexedDB
-    const transaction = db.transaction(['notes'], 'readwrite');
-    const noteStore = transaction.objectStore('notes');
-    noteStore.delete(noteId); // Delete the note from IndexedDB using its ID
-
-    // Remove the note from the DOM
-    note.parentElement.removeChild(note);
-
-    // Save the changes to IndexedDB
-    transaction.oncomplete = () => {
+    function deleteNote() {
+        const note = this.parentElement;
+        note.parentElement.removeChild(note);
         saveNotes();
-    };
-}
-
+    }
 });
