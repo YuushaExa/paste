@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addFolderButton = document.getElementById('add-folder');
     const folderList = document.getElementById('folder-list');
     const boardContainer = document.getElementById('board-container');
+    const currentFolderNameDiv = document.getElementById('CurrentFolderName');
     let currentFolder = 'Default';
 
     // Initialize IndexedDB
@@ -42,10 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (folderName) {
             createFolder(folderName).then(() => loadFolders(() => {
                 currentFolder = folderName;
+                updateCurrentFolderName();
                 loadNotes(currentFolder);
             }));
         }
     });
+
+    function updateCurrentFolderName() {
+        currentFolderNameDiv.textContent = `Current Folder: ${currentFolder}`;
+    }
 
     function folderExists(folderName) {
         return new Promise((resolve, reject) => {
@@ -92,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.dataset.folderName = cursor.value.name;
                 li.addEventListener('click', () => {
                     currentFolder = cursor.value.name;
+                    updateCurrentFolderName();
                     loadNotes(currentFolder);
                 });
                 folderList.appendChild(li);
