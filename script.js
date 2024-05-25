@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const columns = document.querySelectorAll('.column');
     const addFolderButton = document.getElementById('add-folder');
     const folderList = document.getElementById('folder-list');
-    let currentFolder = 'todo';
+    let currentFolder = 'default';
 
     // Initialize IndexedDB
     let db;
-    const request = indexedDB.open('kanbanDB', 1);
+    const request = indexedDB.open('todo', 1);
 
     request.onupgradeneeded = function(event) {
         db = event.target.result;
@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = function(event) {
         db = event.target.result;
         loadFolders();
+        loadNotes(currentFolder);
     };
 
     request.onerror = function(event) {
@@ -64,13 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.dataset.folderName = cursor.value.name;
                 li.addEventListener('click', () => {
                     currentFolder = cursor.value.name;
-                    loadNotes(cursor.value.name);
+                    loadNotes(currentFolder);
                 });
                 folderList.appendChild(li);
                 cursor.continue();
             }
         };
-        loadNotes(currentFolder);
     }
 
     function loadNotes(folderName) {
