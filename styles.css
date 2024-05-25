@@ -3,14 +3,6 @@ body {
     background-color: #f4f4f9;
     margin: 0;
 }
-.note {
-    transition: transform 0.3s ease;
-    position: relative;
-}
-
-.note.dragging {
-    opacity: 0.5;
-}
 
 .container {
     display: flex;
