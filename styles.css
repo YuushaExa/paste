@@ -1,84 +1,33 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
     margin: 0;
-}
-
-.container {
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 200px 0 200px 0;
+    height: 100vh;
+    background-color: #f0f0f0;
 }
 
-.board {
-    display: flex;
-    width: 90%;
-    max-width: 1200px;
-    gap: 20px;
-}
-
-.column {
-    background-color: #ebecf0;
-    border-radius: 5px;
-    padding: 10px;
-    width: 30%;
+.container {
+    width: 80vw;
+    height: 80vh;
+    background-color: white;
+    border: 2px solid #ccc;
     display: flex;
     flex-direction: column;
-    gap: 10px;
 }
 
-.column-header {
-    font-weight: bold;
-    margin-bottom: 10px;
+#board-canvas {
+    flex-grow: 1;
+    border: 1px solid #ccc;
 }
 
 .note {
-    background-color: #fff;
-    border-radius: 5px;
+    position: absolute;
+    background-color: #007bff;
+    color: white;
     padding: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
     cursor: grab;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.note span:focus-visible {
-    border-bottom: 1px dashed #0079bf;
-    outline: none;
-    padding-bottom: 2px;
-}
-
-.note span {
-    overflow-wrap: anywhere;
-    cursor: text;
-    padding-bottom: 2px;
-}
-
-.add-note {
-    background-color: #0079bf;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 10px;
-    cursor: pointer;
-    margin-top: auto;
-}
-
-.add-note:hover {
-    background-color: #005a8e;
-}
-
-.delete-note {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-}
-
-.delete-note:hover {
-    background-color: #c0392b;
+    user-select: none;
 }
