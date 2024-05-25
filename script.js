@@ -67,10 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(['folders'], 'readwrite');
             const folderStore = transaction.objectStore('folders');
-            folderStore.add({ name: folderName }).onsuccess = () => {
+            const request = folderStore.add({ name: folderName });
+
+            request.onsuccess = function() {
                 resolve();
             };
-            folderStore.add({ name: folderName }).onerror = (event) => {
+
+            request.onerror = function(event) {
+                console.error('Folder creation error:', event.target.error);
                 reject(event.target.error);
             };
         });
