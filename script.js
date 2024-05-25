@@ -125,10 +125,10 @@ function drop(event) {
         const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
         const dropPosition = getDropPosition(event.clientY, column);
-        if (dropPosition === 'before' && targetNote) {
-            column.insertBefore(draggingElement, targetNote);
-        } else if (dropPosition === 'after' && targetNote && targetNote.nextElementSibling) {
+        if (dropPosition === 'after' && targetNote && targetNote.nextElementSibling) {
             column.insertBefore(draggingElement, targetNote.nextElementSibling);
+        } else if (dropPosition === 'before' && targetNote) {
+            column.insertBefore(draggingElement, targetNote);
         } else {
             column.appendChild(draggingElement); // Append the dragging element at the end of the column
         }
@@ -137,9 +137,9 @@ function drop(event) {
     }
 }
 
+
 function getDropPosition(clientY, column) {
-    const notes = Array.from(column.querySelectorAll('.note'));
-    const lastNote = notes[notes.length - 1];
+    const lastNote = column.lastElementChild;
     const lastNoteRect = lastNote.getBoundingClientRect();
     if (clientY > lastNoteRect.bottom) {
         return 'after'; // Drop after the last note
@@ -147,7 +147,6 @@ function getDropPosition(clientY, column) {
         return 'before'; // Drop before the last note
     }
 }
-
 
 function deleteNote() {
     this.closest('.note').remove();
