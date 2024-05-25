@@ -42,6 +42,7 @@ function createNoteElement(content) {
     note.classList.add('note');
     note.setAttribute('draggable', 'true');
     note.addEventListener('dragstart', drag);
+    note.addEventListener('dragend', dragEnd);
 
     const moveIconWrapper = document.createElement('div');
     moveIconWrapper.classList.add('move-icon-wrapper');
@@ -101,18 +102,8 @@ function drag(event) {
     event.target.classList.add('dragging');
 }
 
-function dragStart(event) {
-    const note = event.target.closest('.note');
-    if (note) {
-        note.classList.add('dragging');
-    }
-}
-
 function dragEnd(event) {
-    const note = event.target.closest('.note');
-    if (note) {
-        note.classList.remove('dragging');
-    }
+    event.target.classList.remove('dragging');
 }
 
 function allowDrop(event) {
@@ -124,59 +115,13 @@ function allowDrop(event) {
         const notes = Array.from(column.querySelectorAll('.note'));
         const draggingIndex = notes.indexOf(draggingElement);
         const targetIndex = notes.indexOf(targetNote);
-
         if (draggingIndex !== -1 && targetIndex !== -1 && draggingIndex !== targetIndex) {
-            const draggingRect = draggingElement.getBoundingClientRect();
-            const targetRect = targetNote.getBoundingClientRect();
-
-            // Calculate the area of intersection
-            const intersection = {
-                top: Math.max(draggingRect.top, targetRect.top),
-                bottom: Math.min(draggingRect.bottom, targetRect.bottom),
-                left: Math.max(draggingRect.left, targetRect.left),
-                right: Math.min(draggingRect.right, targetRect.right)
-            };
-
-            const draggingArea = (draggingRect.bottom - draggingRect.top) * (draggingRect.right - draggingRect.left);
-            const intersectionArea = Math.max(0, intersection.bottom - intersection.top) * Math.max(0, intersection.right - intersection.left);
-
-            // If the intersection area is more than 20% of the dragging note's area, perform the replacement
-            if (intersectionArea / draggingArea > 0.2) {
-                // Calculate the offset for animation
-                const deltaX = targetRect.left - draggingRect.left;
-                const deltaY = targetRect.top - draggingRect.top;
-
-                // Clone the dragging element to create a temporary animation element
-                const animatingElement = draggingElement.cloneNode(true);
-                animatingElement.style.position = 'absolute';
-                animatingElement.style.zIndex = 1000;
-                animatingElement.style.left = `${draggingRect.left}px`;
-                animatingElement.style.top = `${draggingRect.top}px`;
-                document.body.appendChild(animatingElement);
-
-                // Animate the movement
-                animatingElement.animate([
-                    { transform: 'translate(0, 0)' },
-                    { transform: `translate(${deltaX}px, ${deltaY}px)` }
-                ], {
-                    duration: 300,
-                    easing: 'ease-out'
-                }).onfinish = () => {
-                    column.insertBefore(draggingElement, targetNote);
-                    column.querySelectorAll('.note').forEach(note => note.classList.remove('dragging')); // Ensure no notes are dragging
-                    document.body.removeChild(animatingElement); // Remove the temporary animation element
-                    saveNotes();
-                };
-                
-                return;
-            }
+            targetNote.classList.add('move');
+            setTimeout(() => {
+                targetNote.classList.remove('move');
+            }, 300); // Remove move effect after 0.3 seconds
         }
     }
-}
-
-// Stub function for saving notes
-function saveNotes() {
-    console.log('Notes have been saved');
 }
 
 function drop(event) {
@@ -184,7 +129,10 @@ function drop(event) {
     const draggingElement = document.querySelector('.dragging');
     const column = event.target.closest('.column');
     if (draggingElement && column) {
+        const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
+        column.insertBefore(draggingElement, targetNote);
+        column.querySelectorAll('.note').forEach(note => note.classList.remove('move')); // Remove move effect from all notes
         saveNotes();
     }
 }
