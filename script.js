@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             request.onsuccess = function(event) {
                 const cursor = event.target.result;
                 if (cursor) {
-                    const note = createNoteElement(cursor.value.content);
+                    const note = createNoteElement(cursor.value.content, cursor.value.id);
                     column.insertBefore(note, column.querySelector('.add-note'));
                     cursor.continue();
                 }
@@ -182,10 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function createNoteElement(content) {
+    function createNoteElement(content, id) {
         const note = document.createElement('div');
         note.classList.add('note');
         note.setAttribute('draggable', 'true');
+        note.dataset.noteId = id;
         note.addEventListener('dragstart', drag);
         note.addEventListener('dragend', dragEnd);
 
