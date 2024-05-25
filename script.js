@@ -121,19 +121,18 @@ function createNoteElement(content, id) {
     note.dataset.noteId = id;
     note.addEventListener('dragstart', drag);
     note.addEventListener('dragend', dragEnd);
-    
+
     const noteText = document.createElement('span');
     noteText.textContent = content;
-    note.appendChild(noteText);
-
-    // Add click event listener to the note itself
-    note.addEventListener('click', (event) => {
-        const clickedElement = event.target;
-        if (clickedElement === noteText) {
-            // Make the content editable only if the click occurred on the text
-            noteText.setAttribute('contenteditable', 'true');
-            noteText.focus(); // Optionally focus on the text for better user experience
-        }
+    noteText.setAttribute('contenteditable', 'false');
+    noteText.addEventListener('click', (event) => {
+        noteText.setAttribute('contenteditable', 'true');
+        noteText.focus();
+        event.stopPropagation();
+    });
+    noteText.addEventListener('blur', () => {
+        noteText.setAttribute('contenteditable', 'false');
+        saveNotes();
     });
 
     const deleteButton = document.createElement('button');
@@ -141,10 +140,10 @@ function createNoteElement(content, id) {
     deleteButton.textContent = 'Delete';
     deleteButton.addEventListener('click', deleteNote);
 
+    note.appendChild(noteText);
     note.appendChild(deleteButton);
     return note;
 }
-
 
     function addNote() {
         const column = this.parentElement;
