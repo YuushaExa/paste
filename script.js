@@ -68,24 +68,17 @@ function addNote() {
 function allowDrop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
-    const target = event.target;
+    const targetElement = event.target;
 
-    if (draggingElement && target.classList.contains('column')) {
-        const notes = Array.from(target.querySelectorAll('.note, .add-note'));
-        const closestNote = notes.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = event.clientY - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-
-        if (closestNote && closestNote !== draggingElement) {
-            target.insertBefore(draggingElement, closestNote);
+    if (draggingElement && targetElement && targetElement.classList.contains('note')) {
+        const bounding = targetElement.getBoundingClientRect();
+        const offset = bounding.y + (bounding.height / 2);
+        if (event.clientY - offset > 0) {
+            targetElement.style['border-bottom'] = '2px solid #000';
+            targetElement.style['border-top'] = '';
         } else {
-            target.appendChild(draggingElement);
+            targetElement.style['border-top'] = '2px solid #000';
+            targetElement.style['border-bottom'] = '';
         }
     }
 }
@@ -96,20 +89,36 @@ function drag(event) {
 }
 
 function dragEnd(event) {
-    event.target.classList.remove('dragging');
-    saveNotes();
+    const notes = document.querySelectorAll('.note');
+    notes.forEach(note => {
+        note.style['border-top'] = '';
+        note.style['border-bottom'] = '';
+    });
 }
 
 function drop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
+    const targetElement = event.target;
+
     if (draggingElement) {
         draggingElement.classList.remove('dragging');
-        const target = event.target.closest('.column');
-        if (target) {
-            target.insertBefore(draggingElement, target.querySelector('.add-note'));
-            saveNotes();
+        
+        const column = targetElement.closest('.column');
+        let referenceNode = column.querySelector('.add-note');
+
+        if (targetElement && targetElement.classList.contains('note')) {
+            const bounding = targetElement.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            if (event.clientY - offset > 0) {
+                referenceNode = targetElement.nextSibling;
+            } else {
+                referenceNode = targetElement;
+            }
         }
+
+        column.insertBefore(draggingElement, referenceNode);
+        saveNotes();
     }
 }
 
