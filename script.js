@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const columns = document.querySelectorAll('.column');
     const addFolderButton = document.getElementById('add-folder');
     const folderList = document.getElementById('folder-list');
+    let currentFolder = 'todo';
 
     // Initialize IndexedDB
     let db;
@@ -15,7 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
             folderStore.createIndex('name', 'name', { unique: true });
         }
         if (!db.objectStoreNames.contains('notes')) {
-            db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+            const noteStore = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+            noteStore.createIndex('folder_column', ['folder', 'column'], { unique: false });
         }
     };
 
@@ -60,11 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = document.createElement('li');
                 li.textContent = cursor.value.name;
                 li.dataset.folderName = cursor.value.name;
-                li.addEventListener('click', () => loadNotes(cursor.value.name));
+                li.addEventListener('click', () => {
+                    currentFolder = cursor.value.name;
+                    loadNotes(cursor.value.name);
+                });
                 folderList.appendChild(li);
                 cursor.continue();
             }
         };
+        loadNotes(currentFolder);
     }
 
     function loadNotes(folderName) {
@@ -86,14 +92,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function saveNotes(folderName) {
+    function saveNotes() {
         const columns = document.querySelectorAll('.column');
         columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
             const notes = Array.from(column.querySelectorAll('.note')).map(note => note.textContent.replace('Delete', '').trim());
             const transaction = db.transaction(['notes'], 'readwrite');
             const noteStore = transaction.objectStore('notes');
-            noteStore.index('folder_column').openCursor(IDBKeyRange.only([folderName, columnName])).onsuccess = function(event) {
+            noteStore.index('folder_column').openCursor(IDBKeyRange.only([currentFolder, columnName])).onsuccess = function(event) {
                 const cursor = event.target.result;
                 if (cursor) {
                     cursor.delete();
@@ -101,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
             notes.forEach(noteContent => {
-                noteStore.add({ folder: folderName, column: columnName, content: noteContent });
+                noteStore.add({ folder: currentFolder, column: columnName, content: noteContent });
             });
         });
     }
@@ -116,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const noteText = document.createElement('span');
         noteText.textContent = content;
         noteText.setAttribute('contenteditable', 'true');
-        noteText.addEventListener('input', () => saveNotes(currentFolder)); // Save on input change
+        noteText.addEventListener('input', saveNotes); // Save on input change
 
         const deleteButton = document.createElement('button');
         deleteButton.classList.add('delete-note');
@@ -132,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const column = this.parentElement;
         const newNote = createNoteElement('New Note');
         column.insertBefore(newNote, this);
-        saveNotes(currentFolder);
+        saveNotes();
     }
 
     function allowDrop(event) {
@@ -147,54 +153,4 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetElement.style['border-bottom'] = '2px solid #000';
                 targetElement.style['border-top'] = '';
             } else {
-                targetElement.style['border-top'] = '2px solid #000';
-                targetElement.style['border-bottom'] = '';
-            }
-        }
-    }
-
-    function drag(event) {
-        event.dataTransfer.setData('text/plain', event.target.innerHTML);
-        event.target.classList.add('dragging');
-    }
-
-    function dragEnd(event) {
-        const notes = document.querySelectorAll('.note');
-        notes.forEach(note => {
-            note.style['border-top'] = '';
-            note.style['border-bottom'] = '';
-        });
-    }
-
-    function drop(event) {
-        event.preventDefault();
-        const draggingElement = document.querySelector('.dragging');
-        const targetElement = event.target;
-
-        if (draggingElement) {
-            draggingElement.classList.remove('dragging');
-
-            const column = targetElement.closest('.column');
-            let referenceNode = column.querySelector('.add-note');
-
-            if (targetElement && targetElement.classList.contains('note')) {
-                const bounding = targetElement.getBoundingClientRect();
-                const offset = bounding.y + (bounding.height / 2);
-                if (event.clientY - offset > 0) {
-                    referenceNode = targetElement.nextSibling;
-                } else {
-                    referenceNode = targetElement;
-                }
-            }
-
-            column.insertBefore(draggingElement, referenceNode);
-            saveNotes(currentFolder);
-        }
-    }
-
-    function deleteNote() {
-        const note = this.parentElement;
-        note.parentElement.removeChild(note);
-        saveNotes(currentFolder);
-    }
-});
+                targetElement
