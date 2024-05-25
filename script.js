@@ -129,8 +129,12 @@ function allowDrop(event) {
             const intersectionPercentage = (intersectionArea / draggingArea) * 100;
 
             // If the intersection percentage is more than 20%, perform the replacement
-            if (intersectionPercentage > 10) {
-                column.insertBefore(draggingElement, targetNote);
+            if (intersectionPercentage > 20) {
+                if (draggingRect.top < targetRect.top) {
+                    column.insertBefore(draggingElement, targetNote.nextSibling);
+                } else {
+                    column.insertBefore(draggingElement, targetNote);
+                }
                 column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
                 saveNotes();
                 return;
@@ -143,6 +147,7 @@ function allowDrop(event) {
         }
     }
 }
+
 
 
 function drop(event) {
