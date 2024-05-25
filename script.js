@@ -124,27 +124,9 @@ function drop(event) {
     if (draggingElement && column) {
         const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
-        const dropPosition = getDropPosition(event.clientY, column);
-        if (dropPosition === 'after' && targetNote && targetNote.nextElementSibling) {
-            column.insertBefore(draggingElement, targetNote.nextElementSibling);
-        } else if (dropPosition === 'before' && targetNote) {
-            column.insertBefore(draggingElement, targetNote);
-        } else {
-            column.appendChild(draggingElement); // Append the dragging element at the end of the column
-        }
+        column.insertBefore(draggingElement, targetNote);
         column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
         saveNotes();
-    }
-}
-
-
-function getDropPosition(clientY, column) {
-    const lastNote = column.lastElementChild;
-    const lastNoteRect = lastNote.getBoundingClientRect();
-    if (clientY > lastNoteRect.bottom) {
-        return 'after'; // Drop after the last note
-    } else {
-        return 'before'; // Drop before the last note
     }
 }
 
