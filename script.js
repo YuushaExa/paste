@@ -42,7 +42,6 @@ function createNoteElement(content) {
     note.classList.add('note');
     note.setAttribute('draggable', 'true');
     note.addEventListener('dragstart', drag);
-    note.addEventListener('dragend', dragEnd);
 
     const moveIconWrapper = document.createElement('div');
     moveIconWrapper.classList.add('move-icon-wrapper');
@@ -96,16 +95,10 @@ function addNote() {
         alert('The "To Do" column does not exist.');
     }
 }
-
 function drag(event) {
     event.dataTransfer.setData('text/plain', event.target.innerHTML);
     event.target.classList.add('dragging');
 }
-
-function dragEnd(event) {
-    event.target.classList.remove('dragging');
-}
-
 function allowDrop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
@@ -116,10 +109,10 @@ function allowDrop(event) {
         const draggingIndex = notes.indexOf(draggingElement);
         const targetIndex = notes.indexOf(targetNote);
         if (draggingIndex !== -1 && targetIndex !== -1 && draggingIndex !== targetIndex) {
-            targetNote.classList.add('move');
+            targetNote.classList.add('bounce');
             setTimeout(() => {
-                targetNote.classList.remove('move');
-            }, 300); // Remove move effect after 0.3 seconds
+                targetNote.classList.remove('bounce');
+            }, 500); // Remove bounce effect after 0.5 seconds
         }
     }
 }
@@ -132,7 +125,7 @@ function drop(event) {
         const targetNote = event.target.closest('.note');
         draggingElement.classList.remove('dragging');
         column.insertBefore(draggingElement, targetNote);
-        column.querySelectorAll('.note').forEach(note => note.classList.remove('move')); // Remove move effect from all notes
+        column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
         saveNotes();
     }
 }
