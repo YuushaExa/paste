@@ -270,9 +270,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function deleteNote() {
-        const note = this.parentElement;
-        note.parentElement.removeChild(note);
+ function deleteNote() {
+    const note = this.parentElement;
+    const noteId = parseInt(note.dataset.noteId); // Get the ID of the note
+
+    // Remove the note from IndexedDB
+    const transaction = db.transaction(['notes'], 'readwrite');
+    const noteStore = transaction.objectStore('notes');
+    noteStore.delete(noteId); // Delete the note from IndexedDB using its ID
+
+    // Remove the note from the DOM
+    note.parentElement.removeChild(note);
+
+    // Save the changes to IndexedDB
+    transaction.oncomplete = () => {
         saveNotes();
-    }
+    };
+}
+
 });
