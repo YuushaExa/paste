@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const columns = document.querySelectorAll('.column');
     const addFolderButton = document.getElementById('add-folder');
     const folderList = document.getElementById('folder-list');
-    let currentFolder = 'default';
+    let currentFolder = 'Default';
 
     // Initialize IndexedDB
     let db;
@@ -23,8 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     request.onsuccess = function(event) {
         db = event.target.result;
-        loadFolders();
-        loadNotes(currentFolder);
+        loadFolders(() => {
+            if (!folderExists(currentFolder)) {
+                createFolder('Default');
+            } else {
+                loadNotes(currentFolder);
+            }
+        });
     };
 
     request.onerror = function(event) {
@@ -40,20 +45,41 @@ document.addEventListener('DOMContentLoaded', () => {
         column.addEventListener('drop', drop);
     });
 
-    addFolderButton.addEventListener('click', createFolder);
-
-    function createFolder() {
+    addFolderButton.addEventListener('click', () => {
         const folderName = prompt('Enter folder name:');
         if (folderName) {
-            const transaction = db.transaction(['folders'], 'readwrite');
-            const folderStore = transaction.objectStore('folders');
-            folderStore.add({ name: folderName }).onsuccess = () => {
-                loadFolders();
-            };
+            createFolder(folderName);
         }
+    });
+
+    function folderExists(folderName) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['folders'], 'readonly');
+            const folderStore = transaction.objectStore('folders');
+            const request = folderStore.get(folderName);
+
+            request.onsuccess = function(event) {
+                resolve(event.target.result !== undefined);
+            };
+
+            request.onerror = function(event) {
+                reject(event.target.error);
+            };
+        });
     }
 
-    function loadFolders() {
+    function createFolder(folderName) {
+        const transaction = db.transaction(['folders'], 'readwrite');
+        const folderStore = transaction.objectStore('folders');
+        folderStore.add({ name: folderName }).onsuccess = () => {
+            loadFolders(() => {
+                currentFolder = folderName;
+                loadNotes(currentFolder);
+            });
+        };
+    }
+
+    function loadFolders(callback) {
         folderList.innerHTML = '';
         const transaction = db.transaction(['folders'], 'readonly');
         const folderStore = transaction.objectStore('folders');
@@ -69,6 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 folderList.appendChild(li);
                 cursor.continue();
+            } else if (callback) {
+                callback();
             }
         };
     }
