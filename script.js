@@ -12,8 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onupgradeneeded = function(event) {
         db = event.target.result;
         if (!db.objectStoreNames.contains('folders')) {
-            const folderStore = db.createObjectStore('folders', { keyPath: 'name' });
-            folderStore.createIndex('name', 'name', { unique: true });
+            db.createObjectStore('folders', { keyPath: 'name' });
         }
         if (!db.objectStoreNames.contains('notes')) {
             const noteStore = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
@@ -96,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = document.createElement('li');
                 li.textContent = cursor.value.name;
                 li.dataset.folderName = cursor.value.name;
+                li.style.cursor = 'pointer'; // Make cursor pointer to indicate clickable
                 li.addEventListener('click', () => {
                     currentFolder = cursor.value.name;
                     updateCurrentFolderName();
@@ -157,18 +157,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveNotes() {
         const columns = document.querySelectorAll('.column');
+        const transaction = db.transaction(['notes'], 'readwrite');
+        const noteStore = transaction.objectStore('notes');
+
+        // Clear existing notes for the current folder
+        noteStore.index('folder_column').openCursor(IDBKeyRange.bound([currentFolder, ''], [currentFolder, '\uffff'])).onsuccess = function(event) {
+            const cursor = event.target.result;
+            if (cursor) {
+                cursor.delete();
+                cursor.continue();
+            }
+        };
+
+        // Save new notes
         columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
             const notes = Array.from(column.querySelectorAll('.note')).map(note => note.textContent.replace('Delete', '').trim());
-            const transaction = db.transaction(['notes'], 'readwrite');
-            const noteStore = transaction.objectStore('notes');
-            noteStore.index('folder_column').openCursor(IDBKeyRange.only([currentFolder, columnName])).onsuccess = function(event) {
-                const cursor = event.target.result;
-                if (cursor) {
-                    cursor.delete();
-                    cursor.continue();
-                }
-            };
             notes.forEach(noteContent => {
                 noteStore.add({ folder: currentFolder, column: columnName, content: noteContent });
             });
