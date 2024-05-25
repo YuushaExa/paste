@@ -114,28 +114,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function createNoteElement(content, id) {
-        const note = document.createElement('div');
-        note.classList.add('note');
-        note.setAttribute('draggable', 'true');
-        note.dataset.noteId = id;
-        note.addEventListener('dragstart', drag);
-        note.addEventListener('dragend', dragEnd);
+function createNoteElement(content, id) {
+    const note = document.createElement('div');
+    note.classList.add('note');
+    note.setAttribute('draggable', 'true');
+    note.dataset.noteId = id;
+    note.addEventListener('dragstart', drag);
+    note.addEventListener('dragend', dragEnd);
+    
+    const noteText = document.createElement('span');
+    noteText.textContent = content;
+    note.appendChild(noteText);
 
-        const noteText = document.createElement('span');
-        noteText.textContent = content;
-        noteText.setAttribute('contenteditable', 'true');
-        noteText.addEventListener('input', saveNotes);
+    // Add click event listener to the note itself
+    note.addEventListener('click', (event) => {
+        const clickedElement = event.target;
+        if (clickedElement === noteText) {
+            // Make the content editable only if the click occurred on the text
+            noteText.setAttribute('contenteditable', 'true');
+            noteText.focus(); // Optionally focus on the text for better user experience
+        }
+    });
 
-        const deleteButton = document.createElement('button');
-        deleteButton.classList.add('delete-note');
-        deleteButton.textContent = 'Delete';
-        deleteButton.addEventListener('click', deleteNote);
+    const deleteButton = document.createElement('button');
+    deleteButton.classList.add('delete-note');
+    deleteButton.textContent = 'Delete';
+    deleteButton.addEventListener('click', deleteNote);
 
-        note.appendChild(noteText);
-        note.appendChild(deleteButton);
-        return note;
-    }
+    note.appendChild(deleteButton);
+    return note;
+}
+
 
     function addNote() {
         const column = this.parentElement;
