@@ -3,20 +3,15 @@ body {
     background-color: #f4f4f9;
     margin: 0;
 }
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
-    }
+.note {
+    transition: transform 0.3s ease;
+    position: relative;
 }
-.note.bounce {
-animation: bounce 0.5s ease-in-out forwards;
+
+.note.dragging {
+    opacity: 0.5;
 }
+
 .container {
     display: flex;
     justify-content: center;
