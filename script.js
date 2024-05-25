@@ -153,4 +153,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetElement.style['border-bottom'] = '2px solid #000';
                 targetElement.style['border-top'] = '';
             } else {
-                targetElement
+                targetElement.style['border-top'] = '2px solid #000';
+                targetElement.style['border-bottom'] = '';
+            }
+        }
+    }
+
+    function drag(event) {
+        event.dataTransfer.setData('text/plain', event.target.innerHTML);
+        event.target.classList.add('dragging');
+    }
+
+    function dragEnd(event) {
+        const notes = document.querySelectorAll('.note');
+        notes.forEach(note => {
+            note.style['border-top'] = '';
+            note.style['border-bottom'] = '';
+        });
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        const draggingElement = document.querySelector('.dragging');
+        const targetElement = event.target;
+
+        if (draggingElement) {
+            draggingElement.classList.remove('dragging');
+
+            const column = targetElement.closest('.column');
+            let referenceNode = column.querySelector('.add-note');
+
+            if (targetElement && targetElement.classList.contains('note')) {
+                const bounding = targetElement.getBoundingClientRect();
+                const offset = bounding.y + (bounding.height / 2);
+                if (event.clientY - offset > 0) {
+                    referenceNode = targetElement.nextSibling;
+                } else {
+                    referenceNode = targetElement;
+                }
+            }
+
+            column.insertBefore(draggingElement, referenceNode);
+            saveNotes();
+        }
+    }
+
+    function deleteNote() {
+        const note = this.parentElement;
+        note.parentElement.removeChild(note);
+        saveNotes();
+    }
+});
