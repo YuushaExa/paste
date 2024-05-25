@@ -108,7 +108,30 @@ function allowDrop(event) {
         const notes = Array.from(column.querySelectorAll('.note'));
         const draggingIndex = notes.indexOf(draggingElement);
         const targetIndex = notes.indexOf(targetNote);
+        
         if (draggingIndex !== -1 && targetIndex !== -1 && draggingIndex !== targetIndex) {
+            const draggingRect = draggingElement.getBoundingClientRect();
+            const targetRect = targetNote.getBoundingClientRect();
+
+            // Calculate the area of intersection
+            const intersection = {
+                top: Math.max(draggingRect.top, targetRect.top),
+                bottom: Math.min(draggingRect.bottom, targetRect.bottom),
+                left: Math.max(draggingRect.left, targetRect.left),
+                right: Math.min(draggingRect.right, targetRect.right)
+            };
+
+            const draggingArea = (draggingRect.bottom - draggingRect.top) * (draggingRect.right - draggingRect.left);
+            const intersectionArea = Math.max(0, intersection.bottom - intersection.top) * Math.max(0, intersection.right - intersection.left);
+
+            // If the intersection area is more than 20% of the dragging note's area, perform the replacement
+            if (intersectionArea / draggingArea > 0.2) {
+                column.insertBefore(draggingElement, targetNote);
+                column.querySelectorAll('.note').forEach(note => note.classList.remove('bounce')); // Remove bounce effect from all notes
+                saveNotes();
+                return;
+            }
+
             targetNote.classList.add('bounce');
             setTimeout(() => {
                 targetNote.classList.remove('bounce');
@@ -116,6 +139,7 @@ function allowDrop(event) {
         }
     }
 }
+
 
 function drop(event) {
     event.preventDefault();
