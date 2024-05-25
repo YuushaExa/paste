@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = document.createElement('li');
                 li.textContent = cursor.value.name;
                 li.dataset.folderName = cursor.value.name;
-                li.style.cursor = 'pointer'; // Make cursor pointer to indicate clickable
+                li.style.cursor = 'pointer';
                 li.addEventListener('click', () => {
                     currentFolder = cursor.value.name;
                     updateCurrentFolderName();
@@ -139,12 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
             column.addEventListener('drop', drop);
         });
 
+        const transaction = db.transaction(['notes'], 'readonly');
+        const noteStore = transaction.objectStore('notes');
+        const index = noteStore.index('folder_column');
+        
         columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
-            const transaction = db.transaction(['notes'], 'readonly');
-            const noteStore = transaction.objectStore('notes');
-            const index = noteStore.index('folder_column');
-            index.openCursor(IDBKeyRange.only([folderName, columnName])).onsuccess = function(event) {
+            const request = index.openCursor(IDBKeyRange.only([folderName, columnName]));
+            request.onsuccess = function(event) {
                 const cursor = event.target.result;
                 if (cursor) {
                     const note = createNoteElement(cursor.value.content);
@@ -161,7 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const noteStore = transaction.objectStore('notes');
 
         // Clear existing notes for the current folder
-        noteStore.index('folder_column').openCursor(IDBKeyRange.bound([currentFolder, ''], [currentFolder, '\uffff'])).onsuccess = function(event) {
+        const clearRequest = noteStore.index('folder_column').openCursor(IDBKeyRange.bound([currentFolder, ''], [currentFolder, '\uffff']));
+        clearRequest.onsuccess = function(event) {
             const cursor = event.target.result;
             if (cursor) {
                 cursor.delete();
@@ -189,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const noteText = document.createElement('span');
         noteText.textContent = content;
         noteText.setAttribute('contenteditable', 'true');
-        noteText.addEventListener('input', saveNotes); // Save on input change
+        noteText.addEventListener('input', saveNotes);
 
         const deleteButton = document.createElement('button');
         deleteButton.classList.add('delete-note');
