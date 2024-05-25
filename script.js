@@ -41,6 +41,7 @@ function createNoteElement(content) {
     note.classList.add('note');
     note.setAttribute('draggable', 'true');
     note.addEventListener('dragstart', drag);
+    note.addEventListener('dragend', dragEnd);
 
     const noteText = document.createElement('span');
     noteText.textContent = content;
@@ -66,6 +67,27 @@ function addNote() {
 
 function allowDrop(event) {
     event.preventDefault();
+    const draggingElement = document.querySelector('.dragging');
+    const target = event.target;
+
+    if (draggingElement && target.classList.contains('column')) {
+        const notes = Array.from(target.querySelectorAll('.note, .add-note'));
+        const closestNote = notes.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = event.clientY - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+
+        if (closestNote && closestNote !== draggingElement) {
+            target.insertBefore(draggingElement, closestNote);
+        } else {
+            target.appendChild(draggingElement);
+        }
+    }
 }
 
 function drag(event) {
@@ -73,13 +95,21 @@ function drag(event) {
     event.target.classList.add('dragging');
 }
 
+function dragEnd(event) {
+    event.target.classList.remove('dragging');
+    saveNotes();
+}
+
 function drop(event) {
     event.preventDefault();
     const draggingElement = document.querySelector('.dragging');
     if (draggingElement) {
         draggingElement.classList.remove('dragging');
-        event.target.closest('.column').insertBefore(draggingElement, event.target.closest('.column').querySelector('.add-note'));
-        saveNotes();
+        const target = event.target.closest('.column');
+        if (target) {
+            target.insertBefore(draggingElement, target.querySelector('.add-note'));
+            saveNotes();
+        }
     }
 }
 
