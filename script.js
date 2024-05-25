@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const addNoteButtons = document.querySelectorAll('.add-note');
-    const columns = document.querySelectorAll('.column');
     const addFolderButton = document.getElementById('add-folder');
     const folderList = document.getElementById('folder-list');
+    const boardContainer = document.getElementById('board-container');
     let currentFolder = 'Default';
 
     // Initialize IndexedDB
@@ -24,11 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = function(event) {
         db = event.target.result;
         loadFolders(() => {
-            if (!folderExists(currentFolder)) {
-                createFolder('Default');
-            } else {
-                loadNotes(currentFolder);
-            }
+            folderExists(currentFolder).then(exists => {
+                if (!exists) {
+                    createFolder('Default').then(() => loadNotes(currentFolder));
+                } else {
+                    loadNotes(currentFolder);
+                }
+            });
         });
     };
 
@@ -36,19 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Database error:', event.target.errorCode);
     };
 
-    addNoteButtons.forEach(button => {
-        button.addEventListener('click', addNote);
-    });
-
-    columns.forEach(column => {
-        column.addEventListener('dragover', allowDrop);
-        column.addEventListener('drop', drop);
-    });
-
     addFolderButton.addEventListener('click', () => {
         const folderName = prompt('Enter folder name:');
         if (folderName) {
-            createFolder(folderName);
+            createFolder(folderName).then(() => loadFolders(() => {
+                currentFolder = folderName;
+                loadNotes(currentFolder);
+            }));
         }
     });
 
@@ -69,14 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createFolder(folderName) {
-        const transaction = db.transaction(['folders'], 'readwrite');
-        const folderStore = transaction.objectStore('folders');
-        folderStore.add({ name: folderName }).onsuccess = () => {
-            loadFolders(() => {
-                currentFolder = folderName;
-                loadNotes(currentFolder);
-            });
-        };
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['folders'], 'readwrite');
+            const folderStore = transaction.objectStore('folders');
+            folderStore.add({ name: folderName }).onsuccess = () => {
+                resolve();
+            };
+            folderStore.add({ name: folderName }).onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
     }
 
     function loadFolders(callback) {
@@ -102,9 +99,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadNotes(folderName) {
+        boardContainer.innerHTML = `
+            <div class="board">
+                <div class="column" data-column="todo">
+                    <div class="column-header">To Do</div>
+                    <button class="add-note">Add Note</button>
+                </div>
+                <div class="column" data-column="in-progress">
+                    <div class="column-header">In Progress</div>
+                    <button class="add-note">Add Note</button>
+                </div>
+                <div class="column" data-column="done">
+                    <div class="column-header">Done</div>
+                    <button class="add-note">Add Note</button>
+                </div>
+            </div>
+        `;
+
+        const addNoteButtons = document.querySelectorAll('.add-note');
         const columns = document.querySelectorAll('.column');
+
+        addNoteButtons.forEach(button => {
+            button.addEventListener('click', addNote);
+        });
+
         columns.forEach(column => {
-            column.querySelectorAll('.note').forEach(note => note.remove());
+            column.addEventListener('dragover', allowDrop);
+            column.addEventListener('drop', drop);
+        });
+
+        columns.forEach(column => {
             const columnName = column.getAttribute('data-column');
             const transaction = db.transaction(['notes'], 'readonly');
             const noteStore = transaction.objectStore('notes');
